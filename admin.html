@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Card Admin</title>
+  <style>
+    body { font-family: sans-serif; padding: 20px; }
+    label { display: block; margin-top: 10px; }
+    input, textarea { width: 100%; margin-top: 5px; padding: 5px; }
+    button { margin-top: 10px; }
+    .card-preview { border: 1px solid #ccc; padding: 10px; margin-top: 10px; border-radius: 8px; }
+  </style>
+</head>
+<body>
+
+<h1>Admin Panel</h1>
+
+<form id="card-form">
+  <label>Card ID:
+    <input type="number" id="card-id" required />
+  </label>
+
+  <div id="questions">
+    <label>Question 1:
+      <input type="text" id="q1" required />
+    </label>
+    <label>Answer 1:
+      <input type="text" id="a1" required />
+    </label>
+
+    <label>Question 2:
+      <input type="text" id="q2" required />
+    </label>
+    <label>Answer 2:
+      <input type="text" id="a2" required />
+    </label>
+
+    <label>Question 3:
+      <input type="text" id="q3" required />
+    </label>
+    <label>Answer 3:
+      <input type="text" id="a3" required />
+    </label>
+  </div>
+
+  <button type="submit">Save Card</button>
+</form>
+
+<h2>Existing Cards</h2>
+<div id="card-list"></div>
+
+<script>
+  function getCards() {
+    return JSON.parse(localStorage.getItem("cards") || "[]");
+  }
+
+  function saveCards(cards) {
+    localStorage.setItem("cards", JSON.stringify(cards));
+  }
+
+  function renderCards() {
+    const list = document.getElementById("card-list");
+    list.innerHTML = "";
+    const cards = getCards();
+    cards.forEach((card, index) => {
+      const div = document.createElement("div");
+      div.className = "card-preview";
+      div.innerHTML = `
+        <strong>Card ${card.id}</strong><br>
+        ${card.questions.map((q, i) => `<p><strong>Q${i+1}:</strong> ${q.q}<br><strong>A${i+1}:</strong> ${q.a}</p>`).join("")}
+        <button onclick="editCard(${card.id})">Edit</button>
+        <button onclick="deleteCard(${card.id})">Delete</button>
+      `;
+      list.appendChild(div);
+    });
+  }
+
+  function editCard(id) {
+    const cards = getCards();
+    const card = cards.find(c => c.id == id);
+    if (!card) return;
+
+    document.getElementById("card-id").value = card.id;
+    document.getElementById("q1").value = card.questions[0].q;
+    document.getElementById("a1").value = card.questions[0].a;
+    document.getElementById("q2").value = card.questions[1].q;
+    document.getElementById("a2").value = card.questions[1].a;
+    document.getElementById("q3").value = card.questions[2].q;
+    document.getElementById("a3").value = card.questions[2].a;
+  }
+
+  function deleteCard(id) {
+    let cards = getCards();
+    cards = cards.filter(c => c.id != id);
+    saveCards(cards);
+    renderCards();
+  }
+
+  document.getElementById("card-form").addEventListener("submit", (e) => {
+    e.preventDefault();
+
+    const id = document.getElementById("card-id").value;
+    const questions = [
+      { q: document.getElementById("q1").value, a: document.getElementById("a1").value },
+      { q: document.getElementById("q2").value, a: document.getElementById("a2").value },
+      { q: document.getElementById("q3").value, a: document.getElementById("a3").value },
+    ];
+
+    let cards = getCards();
+    const existing = cards.findIndex(c => c.id == id);
+
+    const newCard = { id, questions };
+
+    if (existing >= 0) {
+      cards[existing] = newCard;
+    } else {
+      cards.push(newCard);
+    }
+
+    saveCards(cards);
+    renderCards();
+    e.target.reset();
+  });
+
+  renderCards();
+</script>
+
+</body>
+</html>

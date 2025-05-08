@@ -3,177 +3,67 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin Panel</title>
-  <style>
-    body { font-family: sans-serif; padding: 20px; }
-    #admin-panel { display: none; }
-    #password-prompt { display: block; }
-    .error { color: red; }
-    label, input { margin: 10px 0; }
-    button { padding: 10px; cursor: pointer; }
-  </style>
+  <title>Encrypt Message</title>
 </head>
 <body>
+  <h1>Encrypt Message</h1>
 
-<!-- Password Prompt -->
-<div id="password-prompt">
-  <h1>Admin Panel Login</h1>
-  <label for="password">Enter the password:</label>
-  <input type="password" id="password" />
-  <button id="submit-password">Submit</button>
-  <p id="error-message" class="error" style="display:none;">Incorrect password. Please try again.</p>
-</div>
+  <button id="encrypt-button">Encrypt</button>
 
-<!-- Admin Panel (Visible after successful login) -->
-<div id="admin-panel">
-  <h1>Admin Panel - Card Management</h1>
-  
-  <!-- Card creation form -->
-  <form id="card-form">
-    <label>Card ID:
-      <input type="number" id="card-id" required />
-    </label>
+  <h3>Encrypted Data and IV</h3>
+  <p id="encryptedData"></p>
+  <p id="ivData"></p>
 
-    <div id="questions">
-      <label>Question 1:
-        <input type="text" id="q1" required />
-      </label>
-      <label>Answer 1:
-        <input type="text" id="a1" required />
-      </label>
+  <script>
+    async function encryptMessage(password, message) {
+      const encoder = new TextEncoder();
+      const passwordBytes = encoder.encode(password);
+      const messageBytes = encoder.encode(message);
 
-      <label>Question 2:
-        <input type="text" id="q2" required />
-      </label>
-      <label>Answer 2:
-        <input type="text" id="a2" required />
-      </label>
+      // Generate a key from the password using PBKDF2
+      const key = await crypto.subtle.importKey(
+        "raw",
+        passwordBytes,
+        { name: "PBKDF2" },
+        false,
+        ["deriveKey"]
+      );
 
-      <label>Question 3:
-        <input type="text" id="q3" required />
-      </label>
-      <label>Answer 3:
-        <input type="text" id="a3" required />
-      </label>
-    </div>
+      // Generate a random Initialization Vector (IV)
+      const iv = crypto.getRandomValues(new Uint8Array(16));  // 16-byte IV
 
-    <button type="submit">Save Card</button>
-  </form>
-
-  <h2>Generated QR Code URLs</h2>
-  <div id="qr-codes"></div>
-</div>
-
-<script>
-
-  const encryptedMessage = "f4c55da33ca2739b0c77e340d4fd44dbb99c3cfe29b42d1e9f9b2462fa43bb34"; 
-
-  // Function to derive a key from the password
-  async function getKeyFromPassword(password) {
-    const encoder = new TextEncoder();
-    const passwordBytes = encoder.encode(password);
-    return crypto.subtle.importKey(
-      "raw", 
-      passwordBytes, 
-      { name: "PBKDF2" },
-      false, 
-      ["deriveKey"]
-    );
-  }
-
-  // Function to decrypt the message using the password
-  async function decryptMessage(password) {
-    const key = await getKeyFromPassword(password);
-    const iv = new Uint8Array(16); // Initialization vector (you can use any fixed value or random one)
-    const encryptedBuffer = hexToBuffer(encryptedMessage);
-
-    try {
-      const decrypted = await crypto.subtle.decrypt(
+      // Encrypt the message with AES-GCM
+      const encryptedData = await crypto.subtle.encrypt(
         { name: "AES-GCM", iv: iv },
         key,
-        encryptedBuffer
+        messageBytes
       );
-      
-      const decoder = new TextDecoder();
-      return decoder.decode(decrypted); // Returns the decrypted string
-    } catch (e) {
-      console.error("Decryption failed", e);
-      return null;
+
+      // Convert encrypted data and IV to hexadecimal format for easy sharing
+      const encryptedHex = bufferToHex(encryptedData);
+      const ivHex = bufferToHex(iv);
+
+      return { encryptedHex, ivHex };
     }
-  }
 
-  // Helper function to convert hex string to ArrayBuffer
-  function hexToBuffer(hex) {
-    const buffer = new ArrayBuffer(hex.length / 2);
-    const view = new Uint8Array(buffer);
-    for (let i = 0; i < hex.length; i += 2) {
-      view[i / 2] = parseInt(hex.substr(i, 2), 16);
+    // Helper function to convert ArrayBuffer to hex string
+    function bufferToHex(buffer) {
+      const view = new Uint8Array(buffer);
+      return Array.from(view).map(b => b.toString(16).padStart(2, '0')).join('');
     }
-    return buffer;
-  }
 
-  // Password verification process
-  document.getElementById('submit-password').addEventListener('click', async function() {
-    const enteredPassword = document.getElementById('password').value;
+    // Handle encryption when the button is clicked
+    document.getElementById('encrypt-button').addEventListener('click', async () => {
+      const password = "bruh@123";  // Your password
+      const message = "pass";       // The message you want to encrypt
 
-    const decryptedMessage = await decryptMessage(enteredPassword);
-    
-    if (decryptedMessage === "pass") {
-      // Password is correct, show the admin panel
-      document.getElementById('password-prompt').style.display = 'none';
-      document.getElementById('admin-panel').style.display = 'block';
-    } else {
-      // Incorrect password
-      document.getElementById('error-message').style.display = 'block';
-    }
-  });
+      // Encrypt the message
+      const { encryptedHex, ivHex } = await encryptMessage(password, message);
 
-  // Create card and generate QR code
-  document.getElementById("card-form").addEventListener("submit", function(event) {
-    event.preventDefault();
-
-    const cardId = parseInt(document.getElementById("card-id").value);
-    const q1 = document.getElementById("q1").value;
-    const a1 = document.getElementById("a1").value;
-    const q2 = document.getElementById("q2").value;
-    const a2 = document.getElementById("a2").value;
-    const q3 = document.getElementById("q3").value;
-    const a3 = document.getElementById("a3").value;
-
-    // Create a card object
-    const card = {
-      id: cardId,
-      questions: [
-        { q: q1, a: a1 },
-        { q: q2, a: a2 },
-        { q: q3, a: a3 }
-      ]
-    };
-
-    // Save the card to localStorage
-    const cards = JSON.parse(localStorage.getItem("cards") || "[]");
-    cards.push(card);
-    localStorage.setItem("cards", JSON.stringify(cards));
-
-    // Generate URL and QR Code for the card
-    const cardUrl = `https://boiithick.github.io/phyzit-answer-database/answers.html?id=${cardId}`;
-    displayQRCode(cardUrl);
-
-    // Clear form
-    document.getElementById("card-form").reset();
-  });
-
-  // Function to display the QR code
-  function displayQRCode(url) {
-    const qrCodeDiv = document.getElementById("qr-codes");
-    const qrCodeContainer = document.createElement("div");
-    qrCodeContainer.innerHTML = `
-      <p>Card URL: <a href="${url}" target="_blank">${url}</a></p>
-      <img src="https://api.qrserver.com/v1/create-qr-code/?data=${encodeURIComponent(url)}&size=150x150" alt="QR Code" />
-    `;
-    qrCodeDiv.appendChild(qrCodeContainer);
-  }
-</script>
-
+      // Display the encrypted data and IV on the page
+      document.getElementById('encryptedData').textContent = `Encrypted Data: ${encryptedHex}`;
+      document.getElementById('ivData').textContent = `IV: ${ivHex}`;
+    });
+  </script>
 </body>
 </html>

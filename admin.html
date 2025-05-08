@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Admin Panel</title>
   <style>
-    body { font-family: sans-serif; padding: 20px; }
+    body { font-family: Arial, sans-serif; padding: 20px; }
     #admin-panel { display: none; }
     #password-prompt { display: block; }
     .error { color: red; }
@@ -66,22 +66,18 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.9-1-crypto-js.js"></script>
 <script>
- 
-  const correctHashedPassword = "16653adbce793befe76468ac3223cd4cf670ab211c439d9c62b4a1f09908bddb"; 
+  // Hashed password stored securely
+  const correctHashedPassword = "8e6c6e63c2907463f0c74d91aef6f8b1d22edc6d8ec9be28d4a0169b1185b5a0"; // "bruh@123" hashed with SHA-256
 
-  // Password verification
+  // Verify entered password
   document.getElementById('submit-password').addEventListener('click', function() {
     const enteredPassword = document.getElementById('password').value;
-
-    // Hash the entered password and compare with the correct password
     const hashedEnteredPassword = CryptoJS.SHA256(enteredPassword).toString(CryptoJS.enc.Hex);
 
     if (hashedEnteredPassword === correctHashedPassword) {
-      // Correct password, unlock the admin panel
       document.getElementById('password-prompt').style.display = 'none';
       document.getElementById('admin-panel').style.display = 'block';
     } else {
-      // Incorrect password
       document.getElementById('error-message').style.display = 'block';
     }
   });
@@ -98,7 +94,6 @@
     const q3 = document.getElementById("q3").value;
     const a3 = document.getElementById("a3").value;
 
-    // Create a card object
     const card = {
       id: cardId,
       questions: [
@@ -108,20 +103,17 @@
       ]
     };
 
-    // Save the card to localStorage (or database if you prefer)
     const cards = JSON.parse(localStorage.getItem("cards") || "[]");
     cards.push(card);
     localStorage.setItem("cards", JSON.stringify(cards));
 
-    // Generate URL and QR Code for the card
     const cardUrl = `https://yourdomain.com/answers.html?id=${cardId}`;
     displayQRCode(cardUrl);
 
-    // Clear form
     document.getElementById("card-form").reset();
   });
 
-  // Function to display the QR code
+  // Function to display QR Code for each card
   function displayQRCode(url) {
     const qrCodeDiv = document.getElementById("qr-codes");
     const qrCodeContainer = document.createElement("div");

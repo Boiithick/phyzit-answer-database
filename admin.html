@@ -2,31 +2,29 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Admin Page</title>
+  <title>Admin Panel</title>
   <style>
     body {
       font-family: sans-serif;
       display: flex;
-      justify-content: center;
+      flex-direction: column;
       align-items: center;
-      height: 100vh;
-      background-color: #f4f4f4;
+      padding-top: 50px;
     }
-    #login, #admin-content {
-      display: none;
-      text-align: center;
-    }
-    #login.active, #admin-content.active {
-      display: block;
-    }
-    input[type="password"] {
+    input, button {
+      margin: 5px;
       padding: 8px;
       font-size: 1em;
     }
-    button {
-      padding: 8px 12px;
-      font-size: 1em;
-      margin-left: 10px;
+    #admin-content, #card-form {
+      display: none;
+    }
+    .active {
+      display: block;
+    }
+    #result {
+      margin-top: 20px;
+      word-break: break-all;
     }
   </style>
 </head>
@@ -39,21 +37,47 @@
   </div>
 
   <div id="admin-content">
-    <h1>Hello, World</h1>
-    <p>Welcome to the admin page.</p>
+    <h1>Admin Panel</h1>
+    <div id="card-form">
+      <input type="number" id="cardNumber" placeholder="Card Number"><br>
+      <input type="text" id="answer1" placeholder="Answer 1"><br>
+      <input type="text" id="answer2" placeholder="Answer 2"><br>
+      <input type="text" id="answer3" placeholder="Answer 3"><br>
+      <button onclick="generateLink()">Generate Link</button>
+    </div>
+    <div id="result"></div>
   </div>
 
   <script>
-    const CORRECT_PASSWORD = 'letmein'; // change this to your desired password
+    const CORRECT_PASSWORD = 'letmein'; // Change this!
 
     function checkPassword() {
       const input = document.getElementById('password').value;
       if (input === CORRECT_PASSWORD) {
         document.getElementById('login').classList.remove('active');
         document.getElementById('admin-content').classList.add('active');
+        document.getElementById('card-form').classList.add('active');
       } else {
         document.getElementById('error').innerText = 'Incorrect password.';
       }
+    }
+
+    function generateLink() {
+      const card = document.getElementById('cardNumber').value;
+      const a1 = encodeURIComponent(document.getElementById('answer1').value);
+      const a2 = encodeURIComponent(document.getElementById('answer2').value);
+      const a3 = encodeURIComponent(document.getElementById('answer3').value);
+
+      if (!card || !a1 || !a2 || !a3) {
+        document.getElementById('result').innerText = 'Please fill all fields.';
+        return;
+      }
+
+      const url = `game.html?card=${card}&a1=${a1}&a2=${a2}&a3=${a3}`;
+      document.getElementById('result').innerHTML = `
+        <strong>Generated URL:</strong><br>
+        <a href="${url}" target="_blank">${url}</a>
+      `;
     }
   </script>
 </body>

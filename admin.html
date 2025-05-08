@@ -6,51 +6,88 @@
   <title>Admin Panel</title>
   <style>
     body { font-family: sans-serif; padding: 20px; }
+    #admin-panel { display: none; }
+    #password-prompt { display: block; }
+    .error { color: red; }
     label, input { margin: 10px 0; }
-    button { padding: 10px; margin-top: 10px; cursor: pointer; }
+    button { padding: 10px; cursor: pointer; }
   </style>
 </head>
 <body>
 
-<h1>Admin Panel - Card Management</h1>
+<!-- Password Prompt -->
+<div id="password-prompt">
+  <h1>Admin Panel Login</h1>
+  <label for="password">Enter the password:</label>
+  <input type="password" id="password" />
+  <button id="submit-password">Submit</button>
+  <p id="error-message" class="error" style="display:none;">Incorrect password. Please try again.</p>
+</div>
 
-<!-- Admin Panel Form -->
-<form id="card-form">
-  <label>Card ID:
-    <input type="number" id="card-id" required />
-  </label>
-
-  <div id="questions">
-    <label>Question 1:
-      <input type="text" id="q1" required />
-    </label>
-    <label>Answer 1:
-      <input type="text" id="a1" required />
-    </label>
-
-    <label>Question 2:
-      <input type="text" id="q2" required />
-    </label>
-    <label>Answer 2:
-      <input type="text" id="a2" required />
+<!-- Admin Panel (Visible after successful login) -->
+<div id="admin-panel">
+  <h1>Admin Panel - Card Management</h1>
+  
+  <!-- Card creation form -->
+  <form id="card-form">
+    <label>Card ID:
+      <input type="number" id="card-id" required />
     </label>
 
-    <label>Question 3:
-      <input type="text" id="q3" required />
-    </label>
-    <label>Answer 3:
-      <input type="text" id="a3" required />
-    </label>
-  </div>
+    <div id="questions">
+      <label>Question 1:
+        <input type="text" id="q1" required />
+      </label>
+      <label>Answer 1:
+        <input type="text" id="a1" required />
+      </label>
 
-  <button type="submit">Save Card</button>
-</form>
+      <label>Question 2:
+        <input type="text" id="q2" required />
+      </label>
+      <label>Answer 2:
+        <input type="text" id="a2" required />
+      </label>
 
-<h2>Generated QR Code URLs</h2>
-<div id="qr-codes"></div>
+      <label>Question 3:
+        <input type="text" id="q3" required />
+      </label>
+      <label>Answer 3:
+        <input type="text" id="a3" required />
+      </label>
+    </div>
 
+    <button type="submit">Save Card</button>
+  </form>
+
+  <h2>Generated QR Code URLs</h2>
+  <div id="qr-codes"></div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.9-1-crypto-js.js"></script>
 <script>
-  // Function to create card and generate URL
+  // Define a hashed password (use a secure password)
+  const correctHashedPassword = "16653adbce793befe76468ac3223cd4cf670ab211c439d9c62b4a1f09908bddb"; 
+
+  // Password verification
+  document.getElementById('submit-password').addEventListener('click', function() {
+    const enteredPassword = document.getElementById('password').value;
+
+    // Hash the entered password
+    const hashedEnteredPassword = CryptoJS.SHA256(enteredPassword).toString(CryptoJS.enc.Hex);
+
+    // Compare the hashed password with the stored hashed password
+    if (hashedEnteredPassword === correctHashedPassword) {
+      // Password is correct, show the admin panel
+      document.getElementById('password-prompt').style.display = 'none';
+      document.getElementById('admin-panel').style.display = 'block';
+    } else {
+      // Incorrect password
+      document.getElementById('error-message').style.display = 'block';
+    }
+  });
+
+  // Create card and generate QR code
   document.getElementById("card-form").addEventListener("submit", function(event) {
     event.preventDefault();
 
@@ -78,7 +115,7 @@
     localStorage.setItem("cards", JSON.stringify(cards));
 
     // Generate URL and QR Code for the card
-    const cardUrl = `https://yourgithub.io/answers.html?id=${cardId}`;
+    const cardUrl = `https://boiithick.github.io/phyzit-answer-database/answers.html?id=${cardId}`;
     displayQRCode(cardUrl);
 
     // Clear form

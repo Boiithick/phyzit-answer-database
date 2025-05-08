@@ -1,146 +1,37 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin Panel</title>
-  <style>
-    body { font-family: sans-serif; padding: 20px; }
-    .login { display: block; }
-    .admin { display: none; }
-    label, input { margin: 10px 0; }
-    button { padding: 10px; margin-top: 10px; cursor: pointer; }
-  </style>
-</head>
-<body>
-
-<h1>Password Protected Admin Panel</h1>
-
-<!-- Admin Panel -->
-<div id="admin-panel" class="admin">
-  <h2>Admin Panel</h2>
-  <form id="card-form">
-    <label>Card ID:
-      <input type="number" id="card-id" required />
-    </label>
-
-    <div id="questions">
-      <label>Question 1:
-        <input type="text" id="q1" required />
-      </label>
-      <label>Answer 1:
-        <input type="text" id="a1" required />
-      </label>
-
-      <label>Question 2:
-        <input type="text" id="q2" required />
-      </label>
-      <label>Answer 2:
-        <input type="text" id="a2" required />
-      </label>
-
-      <label>Question 3:
-        <input type="text" id="q3" required />
-      </label>
-      <label>Answer 3:
-        <input type="text" id="a3" required />
-      </label>
-    </div>
-
-    <button type="submit">Save Card</button>
-  </form>
-
-  <h2>Existing Cards</h2>
-  <div id="card-list"></div>
-
-  <button onclick="logout()">Logout</button>
-</div>
-
+<!-- This is part of your Admin Panel where cards are saved -->
 <script>
-  // Your password hash (SHA-256 of "letmein" for example)
-  const storedPasswordHash = "e3afed0047b08059d0fada10f400c1e5"; // This is SHA-256 of "letmein"
+  // Saving cards to localStorage when the form is submitted
+  document.getElementById("card-form").addEventListener("submit", function(event) {
+    event.preventDefault();
 
-  // Helper function to hash the password (SHA-256)
-  async function sha256(message) {
-    const msgBuffer = new TextEncoder().encode(message); // encode as bytes
-    const hashBuffer = await crypto.subtle.digest("SHA-256", msgBuffer); // hash the message
-    const hashArray = Array.from(new Uint8Array(hashBuffer)); // convert buffer to byte array
-    return hashArray.map(byte => byte.toString(16).padStart(2, "0")).join(""); // convert bytes to hex string
-  }
+    const cardId = parseInt(document.getElementById("card-id").value);
+    const q1 = document.getElementById("q1").value;
+    const a1 = document.getElementById("a1").value;
+    const q2 = document.getElementById("q2").value;
+    const a2 = document.getElementById("a2").value;
+    const q3 = document.getElementById("q3").value;
+    const a3 = document.getElementById("a3").value;
 
-  // Function to request password and check login
-  async function checkPassword() {
-    const password = prompt("Enter password to access the Admin Panel:");
-    const hashedPassword = await sha256(password);
+    // Create a card object
+    const card = {
+      id: cardId,
+      questions: [
+        { q: q1, a: a1 },
+        { q: q2, a: a2 },
+        { q: q3, a: a3 }
+      ]
+    };
 
-    if (hashedPassword === storedPasswordHash) {
-      showAdminPanel();
-    } else {
-      alert("Incorrect password. Access denied.");
-      window.location.href = "https://www.google.com"; // Redirect to another page (can be any URL)
-    }
-  }
-
-  // Show the admin panel if password is correct
-  function showAdminPanel() {
-    document.getElementById("admin-panel").style.display = "block";
-    renderCards();  // Optionally render existing cards from localStorage
-  }
-
-  // Render saved cards from localStorage (if any)
-  function renderCards() {
-    const cards = JSON.parse(localStorage.getItem("cards") || "[]");
-    const list = document.getElementById("card-list");
-    list.innerHTML = ""; // Clear any existing cards
-    cards.forEach((card, index) => {
-      const div = document.createElement("div");
-      div.innerHTML = `
-        <strong>Card ${card.id}</strong><br>
-        ${card.questions.map((q, i) => `<p><strong>Q${i+1}:</strong> ${q.q}<br><strong>A${i+1}:</strong> ${q.a}</p>`).join("")}
-        <button onclick="editCard(${card.id})">Edit</button>
-        <button onclick="deleteCard(${card.id})">Delete</button>
-      `;
-      list.appendChild(div);
-    });
-  }
-
-  // Edit card function (can be implemented if needed)
-  function editCard(cardId) {
-    const cards = JSON.parse(localStorage.getItem("cards") || "[]");
-    const cardToEdit = cards.find(card => card.id === cardId);
-
-    // Populate form with card data (optional)
-    document.getElementById("card-id").value = cardToEdit.id;
-    document.getElementById("q1").value = cardToEdit.questions[0].q;
-    document.getElementById("a1").value = cardToEdit.questions[0].a;
-    document.getElementById("q2").value = cardToEdit.questions[1].q;
-    document.getElementById("a2").value = cardToEdit.questions[1].a;
-    document.getElementById("q3").value = cardToEdit.questions[2].q;
-    document.getElementById("a3").value = cardToEdit.questions[2].a;
-  }
-
-  // Delete card function
-  function deleteCard(cardId) {
+    // Get the existing cards from localStorage (if any)
     const cards = JSON.parse(localStorage.getItem("cards") || "[]");
 
-    // Filter out the card to delete
-    const updatedCards = cards.filter(card => card.id !== cardId);
+    // Add the new card
+    cards.push(card);
 
-    // Save the updated card list back to localStorage
-    localStorage.setItem("cards", JSON.stringify(updatedCards));
+    // Save the updated list of cards back to localStorage
+    localStorage.setItem("cards", JSON.stringify(cards));
 
-    // Re-render the list of cards after deletion
+    // Optionally, render the updated list of cards
     renderCards();
-  }
-
-  // Logout function
-  function logout() {
-    window.location.reload();
-  }
-
-  // On page load, prompt for password
-  window.onload = checkPassword;
+  });
 </script>
-
-</body>
-</html>

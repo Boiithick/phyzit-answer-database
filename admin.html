@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Panel</title>
+  <style>
+    body { font-family: sans-serif; padding: 20px; }
+    label, input { margin: 10px 0; }
+    button { padding: 10px; margin-top: 10px; cursor: pointer; }
+  </style>
+</head>
+<body>
+
+<h1>Admin Panel - Card Management</h1>
+
+<!-- Admin Panel Form -->
+<form id="card-form">
+  <label>Card ID:
+    <input type="number" id="card-id" required />
+  </label>
+
+  <div id="questions">
+    <label>Question 1:
+      <input type="text" id="q1" required />
+    </label>
+    <label>Answer 1:
+      <input type="text" id="a1" required />
+    </label>
+
+    <label>Question 2:
+      <input type="text" id="q2" required />
+    </label>
+    <label>Answer 2:
+      <input type="text" id="a2" required />
+    </label>
+
+    <label>Question 3:
+      <input type="text" id="q3" required />
+    </label>
+    <label>Answer 3:
+      <input type="text" id="a3" required />
+    </label>
+  </div>
+
+  <button type="submit">Save Card</button>
+</form>
+
+<h2>Generated QR Code URLs</h2>
+<div id="qr-codes"></div>
+
+<script>
+  // Function to create card and generate URL
+  document.getElementById("card-form").addEventListener("submit", function(event) {
+    event.preventDefault();
+
+    const cardId = parseInt(document.getElementById("card-id").value);
+    const q1 = document.getElementById("q1").value;
+    const a1 = document.getElementById("a1").value;
+    const q2 = document.getElementById("q2").value;
+    const a2 = document.getElementById("a2").value;
+    const q3 = document.getElementById("q3").value;
+    const a3 = document.getElementById("a3").value;
+
+    // Create a card object
+    const card = {
+      id: cardId,
+      questions: [
+        { q: q1, a: a1 },
+        { q: q2, a: a2 },
+        { q: q3, a: a3 }
+      ]
+    };
+
+    // Save the card to localStorage
+    const cards = JSON.parse(localStorage.getItem("cards") || "[]");
+    cards.push(card);
+    localStorage.setItem("cards", JSON.stringify(cards));
+
+    // Generate URL and QR Code for the card
+    const cardUrl = `https://yourgithub.io/answers.html?id=${cardId}`;
+    displayQRCode(cardUrl);
+
+    // Clear form
+    document.getElementById("card-form").reset();
+  });
+
+  // Function to display the QR code
+  function displayQRCode(url) {
+    const qrCodeDiv = document.getElementById("qr-codes");
+    const qrCodeContainer = document.createElement("div");
+    qrCodeContainer.innerHTML = `
+      <p>Card URL: <a href="${url}" target="_blank">${url}</a></p>
+      <img src="https://api.qrserver.com/v1/create-qr-code/?data=${encodeURIComponent(url)}&size=150x150" alt="QR Code" />
+    `;
+    qrCodeDiv.appendChild(qrCodeContainer);
+  }
+</script>
+
+</body>
+</html>

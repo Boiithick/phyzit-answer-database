@@ -3,12 +3,12 @@
 <head>
   <title>Card Game Answers</title>
   <style>
-    body { font-family: sans-serif; padding: 20px; }
+    body { font-family: Arial, sans-serif; padding: 20px; }
     .card {
       border: 1px solid #ccc;
-      padding: 15px;
-      margin-bottom: 10px;
       border-radius: 8px;
+      padding: 15px;
+      margin-bottom: 20px;
     }
     .highlight {
       background-color: yellow;
@@ -21,23 +21,37 @@
   </style>
 </head>
 <body>
-  <h1>All Card Answers</h1>
 
-  <div id="card-1" class="card">Card 1: Answer goes here</div>
-  <div id="card-2" class="card">Card 2: Answer goes here</div>
-  <div id="card-3" class="card">Card 3: Answer goes here</div>
+<h1>All Card Answers</h1>
 
-  <script>
-    window.addEventListener("load", () => {
-      const hash = window.location.hash;
-      if (hash) {
-        const target = document.querySelector(hash);
-        if (target) {
-          target.classList.add("highlight");
-          target.scrollIntoView({ behavior: "smooth", block: "center" });
-        }
+<div id="card-1" class="card">
+  <h2>Card 1</h2>
+  <p><strong>Q1:</strong> What is the capital of France?<br><strong>A1:</strong> Paris</p>
+  <p><strong>Q2:</strong> What is 5 + 3?<br><strong>A2:</strong> 8</p>
+  <p><strong>Q3:</strong> What color is the sky?<br><strong>A3:</strong> Blue</p>
+</div>
+
+<div id="card-2" class="card">
+  <h2>Card 2</h2>
+  <p><strong>Q1:</strong> Who wrote Hamlet?<br><strong>A1:</strong> William Shakespeare</p>
+  <p><strong>Q2:</strong> What is the boiling point of water?<br><strong>A2:</strong> 100°C</p>
+  <p><strong>Q3:</strong> What is 10 / 2?<br><strong>A3:</strong> 5</p>
+</div>
+
+<!-- Add more cards as needed -->
+
+<script>
+  window.addEventListener("load", () => {
+    const hash = window.location.hash;
+    if (hash) {
+      const target = document.querySelector(hash);
+      if (target) {
+        target.classList.add("highlight");
+        target.scrollIntoView({ behavior: "smooth", block: "center" });
       }
-    });
-  </script>
+    }
+  });
+</script>
+
 </body>
 </html>

@@ -2,132 +2,59 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin Panel</title>
+  <title>Admin Page</title>
   <style>
-    body { font-family: Arial, sans-serif; padding: 20px; }
-    #admin-panel { display: none; }
-    #password-prompt { display: block; }
-    .error { color: red; }
-    label, input { margin: 10px 0; }
-    button { padding: 10px; cursor: pointer; }
+    body {
+      font-family: sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background-color: #f4f4f4;
+    }
+    #login, #admin-content {
+      display: none;
+      text-align: center;
+    }
+    #login.active, #admin-content.active {
+      display: block;
+    }
+    input[type="password"] {
+      padding: 8px;
+      font-size: 1em;
+    }
+    button {
+      padding: 8px 12px;
+      font-size: 1em;
+      margin-left: 10px;
+    }
   </style>
 </head>
 <body>
+  <div id="login" class="active">
+    <h2>Enter Admin Password</h2>
+    <input type="password" id="password" placeholder="Password">
+    <button onclick="checkPassword()">Login</button>
+    <p id="error" style="color: red;"></p>
+  </div>
 
-<!-- Password Prompt -->
-<div id="password-prompt">
-  <h1>Admin Panel Login</h1>
-  <label for="password">Enter the password:</label>
-  <input type="password" id="password" />
-  <button id="submit-password">Submit</button>
-  <p id="error-message" class="error" style="display:none;">Incorrect password. Please try again.</p>
-</div>
+  <div id="admin-content">
+    <h1>Hello, World</h1>
+    <p>Welcome to the admin page.</p>
+  </div>
 
-<!-- Admin Panel (Visible after successful login) -->
-<div id="admin-panel">
-  <h1>Admin Panel - Card Management</h1>
-  
-  <!-- Card creation form -->
-  <form id="card-form">
-    <label>Card ID:
-      <input type="number" id="card-id" required />
-    </label>
+  <script>
+    const CORRECT_PASSWORD = 'letmein'; // change this to your desired password
 
-    <div id="questions">
-      <label>Question 1:
-        <input type="text" id="q1" required />
-      </label>
-      <label>Answer 1:
-        <input type="text" id="a1" required />
-      </label>
-
-      <label>Question 2:
-        <input type="text" id="q2" required />
-      </label>
-      <label>Answer 2:
-        <input type="text" id="a2" required />
-      </label>
-
-      <label>Question 3:
-        <input type="text" id="q3" required />
-      </label>
-      <label>Answer 3:
-        <input type="text" id="a3" required />
-      </label>
-    </div>
-
-    <button type="submit">Save Card</button>
-  </form>
-
-  <h2>Generated QR Code URLs</h2>
-  <div id="qr-codes"></div>
-</div>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.9-1-crypto-js.js"></script>
-<script>
-  const correctHashedPassword = "b6a872a7d2fc8245ff465a7c4c4a8b2dd0527bf26fcce01e79d4aff0152aeb3a";
-
-  // Password verification
-  document.getElementById('submit-password').addEventListener('click', function() {
-    const enteredPassword = document.getElementById('password').value;
-
-    // Hash the entered password
-    const hashedEnteredPassword = CryptoJS.SHA256(enteredPassword).toString(CryptoJS.enc.Hex);
-    
-    // Log the hashed password to help debug
-    console.log("Hashed entered password: ", hashedEnteredPassword);
-
-    // Check if the entered hashed password matches the stored correct hashed password
-    if (hashedEnteredPassword === correctHashedPassword) {
-      // Password is correct, show the admin panel
-      document.getElementById('password-prompt').style.display = 'none';
-      document.getElementById('admin-panel').style.display = 'block';
-    } else {
-      // Incorrect password
-      document.getElementById('error-message').style.display = 'block';
+    function checkPassword() {
+      const input = document.getElementById('password').value;
+      if (input === CORRECT_PASSWORD) {
+        document.getElementById('login').classList.remove('active');
+        document.getElementById('admin-content').classList.add('active');
+      } else {
+        document.getElementById('error').innerText = 'Incorrect password.';
+      }
     }
-  });
-
-  // Create card and generate QR code URL
-  document.getElementById("card-form").addEventListener("submit", function(event) {
-    event.preventDefault();
-
-    const cardId = parseInt(document.getElementById("card-id").value);
-    const q1 = document.getElementById("q1").value;
-    const a1 = document.getElementById("a1").value;
-    const q2 = document.getElementById("q2").value;
-    const a2 = document.getElementById("a2").value;
-    const q3 = document.getElementById("q3").value;
-    const a3 = document.getElementById("a3").value;
-
-    const card = {
-      id: cardId,
-      questions: [
-        { q: q1, a: a1 },
-        { q: q2, a: a2 },
-        { q: q3, a: a3 }
-      ]
-    };
-
-    const cards = JSON.parse(localStorage.getItem("cards") || "[]");
-    cards.push(card);
-    localStorage.setItem("cards", JSON.stringify(cards));
-
-    const cardUrl = `https://yourdomain.com/answers.html?id=${cardId}`;
-    displayQRCode(cardUrl);
-
-    document.getElementById("card-form").reset();
-  });
-
-  // Function to display QR Code for each card
-  function displayQRCode(url) {
-    const qrCodeDiv = document.getElementById("qr-codes");
-    const qrCodeContainer = document.createElement("div");
-    qrCodeContainer.innerHTML = `Card URL: <a href="${url}" target="_blank">${url}</a>`;
-    qrCodeDiv.appendChild(qrCodeContainer);
-  }
-</script>
-
+  </script>
 </body>
 </html>

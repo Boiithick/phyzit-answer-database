@@ -66,18 +66,25 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.9-1-crypto-js.js"></script>
 <script>
-  // Hashed password stored securely
-  const correctHashedPassword = "8e6c6e63c2907463f0c74d91aef6f8b1d22edc6d8ec9be28d4a0169b1185b5a0"; // "bruh@123" hashed with SHA-256
+  const correctHashedPassword = "b6a872a7d2fc8245ff465a7c4c4a8b2dd0527bf26fcce01e79d4aff0152aeb3a";
 
-  // Verify entered password
+  // Password verification
   document.getElementById('submit-password').addEventListener('click', function() {
     const enteredPassword = document.getElementById('password').value;
-    const hashedEnteredPassword = CryptoJS.SHA256(enteredPassword).toString(CryptoJS.enc.Hex);
 
+    // Hash the entered password
+    const hashedEnteredPassword = CryptoJS.SHA256(enteredPassword).toString(CryptoJS.enc.Hex);
+    
+    // Log the hashed password to help debug
+    console.log("Hashed entered password: ", hashedEnteredPassword);
+
+    // Check if the entered hashed password matches the stored correct hashed password
     if (hashedEnteredPassword === correctHashedPassword) {
+      // Password is correct, show the admin panel
       document.getElementById('password-prompt').style.display = 'none';
       document.getElementById('admin-panel').style.display = 'block';
     } else {
+      // Incorrect password
       document.getElementById('error-message').style.display = 'block';
     }
   });

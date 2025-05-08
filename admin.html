@@ -64,20 +64,61 @@
   <div id="qr-codes"></div>
 </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.9-1-crypto-js.js"></script>
 <script>
-  // Define a hashed password (use a secure password)
-  const correctHashedPassword = "16653adbce793befe76468ac3223cd4cf670ab211c439d9c62b4a1f09908bddb"; 
 
-  // Password verification
-  document.getElementById('submit-password').addEventListener('click', function() {
+  const encryptedMessage = "ee7b213ed6fb8f1fae71b3cbd01c88da3b8a0b9e4e24d2408ed65f2a3bcab0da"; 
+
+  // Function to derive a key from the password
+  async function getKeyFromPassword(password) {
+    const encoder = new TextEncoder();
+    const passwordBytes = encoder.encode(password);
+    return crypto.subtle.importKey(
+      "raw", 
+      passwordBytes, 
+      { name: "PBKDF2" },
+      false, 
+      ["deriveKey"]
+    );
+  }
+
+  // Function to decrypt the message using the password
+  async function decryptMessage(password) {
+    const key = await getKeyFromPassword(password);
+    const iv = new Uint8Array(16); // Initialization vector (you can use any fixed value or random one)
+    const encryptedBuffer = hexToBuffer(encryptedMessage);
+
+    try {
+      const decrypted = await crypto.subtle.decrypt(
+        { name: "AES-GCM", iv: iv },
+        key,
+        encryptedBuffer
+      );
+      
+      const decoder = new TextDecoder();
+      return decoder.decode(decrypted); // Returns the decrypted string
+    } catch (e) {
+      console.error("Decryption failed", e);
+      return null;
+    }
+  }
+
+  // Helper function to convert hex string to ArrayBuffer
+  function hexToBuffer(hex) {
+    const buffer = new ArrayBuffer(hex.length / 2);
+    const view = new Uint8Array(buffer);
+    for (let i = 0; i < hex.length; i += 2) {
+      view[i / 2] = parseInt(hex.substr(i, 2), 16);
+    }
+    return buffer;
+  }
+
+  // Password verification process
+  document.getElementById('submit-password').addEventListener('click', async function() {
     const enteredPassword = document.getElementById('password').value;
 
-    // Hash the entered password
-    const hashedEnteredPassword = CryptoJS.SHA256(enteredPassword).toString(CryptoJS.enc.Hex);
-
-    // Compare the hashed password with the stored hashed password
-    if (hashedEnteredPassword === correctHashedPassword) {
+    const decryptedMessage = await decryptMessage(enteredPassword);
+    
+    if (decryptedMessage === "pass") {
       // Password is correct, show the admin panel
       document.getElementById('password-prompt').style.display = 'none';
       document.getElementById('admin-panel').style.display = 'block';
